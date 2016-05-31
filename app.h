@@ -20,8 +20,8 @@ class App { // The App class handles the application runtime.
   private:  
     SDL_Window* _window;
     SDL_Renderer* _renderer;
+    NeuralNetwork* _neural;
 
-  
     int start() {
       SDL_Init(SDL_INIT_VIDEO);
       _window = SDL_CreateWindow("An SDL2 Window",
@@ -40,6 +40,8 @@ class App { // The App class handles the application runtime.
         std::cout << "Could not create renderer: " << SDL_GetError() << '\n';
         return 1;
       }
+      std::vector<int> nodeLayerSizes = { 2, 8, 3 };
+      _neural = new NeuralNetwork(0.05, nodeLayerSizes);
       return 0;
     }
     
@@ -55,14 +57,13 @@ class App { // The App class handles the application runtime.
         }
         
         drawWorld();
-        SDL_Delay(16);
-        
       }
 
       return 0;
     }
     
     int shutdown() {
+      delete _neural;
       SDL_DestroyRenderer(_renderer);
       SDL_DestroyWindow(_window);
       SDL_Quit();
@@ -71,11 +72,32 @@ class App { // The App class handles the application runtime.
     
     void drawWorld() {
       drawBackground();
+      drawPoints();
       SDL_RenderPresent(_renderer);
     }
     
     void drawBackground() {
       SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
       SDL_RenderClear(_renderer);
+    }
+    
+    void drawPoints() {
+      for(int x = 0; x < SCREEN_WIDTH; x++) {
+        for(int y = 0; y < SCREEN_HEIGHT; y++) {
+          drawPoint(x,y);
+        }
+      }
+    }
+    
+    void drawPoint(int x, int y) {
+      std::vector<double> inputs;
+      inputs.push_back(x);
+      inputs.push_back(y);
+      std::vector<double> outputs = _neural->calculateOutputValues(inputs);
+      int r = floor(outputs[0] * 256);
+      int g = floor(outputs[1] * 256);
+      int b = floor(outputs[2] * 256);
+      SDL_SetRenderDrawColor(_renderer, r, g, b, 255);
+      SDL_RenderDrawPoint(_renderer, x, y);
     }
 };
