@@ -7,11 +7,17 @@ class NeuralNetwork {
   public:
     const double _mutationRate;
     const std::vector<int> _nodeLayerSizes;
+    const std::vector<int> _edgeLayerSizes;
+    std::vector<double> _nodes;
     const std::vector<double> _edges; // weight values grouped by edge group, terminus, origin.
+    int _currentNodeOffset;
+    int _currentEdgeOffset;
   
     NeuralNetwork(double mutationRate, const std::vector<int> nodeLayerSizes) // Initial Constructor.
       : _mutationRate(mutationRate),
         _nodeLayerSizes(nodeLayerSizes),
+        _edgeLayerSizes(edgeLayerSizes(nodeLayerSizes)),
+        _nodes(nodes(nodeLayerSizes)),
         _edges(edges(nodeLayerSizes)) {}
     /*
     // TODO: Mutate constructor.
@@ -21,42 +27,59 @@ class NeuralNetwork {
         _verticeGroups(mutate(neural->_nodeLayerSizes)) {}
 
 */
-    // int *start_addr = my_vector.get() + some_calculated_offset;
-    std::vector<double> calculateOutputValues(std::vector<double>& inputs) {
+    
+    void calculateOutputValues(std::vector<double>& inputs) {
+      initializeNetForCalculation(inputs);
+      calculateLayers();
+    }
+    
+    std::vector<double> getOutputValues() {
       std::vector<double> outputs;
-      int currentOffset = 0;
-      for(int i = 0; i < _nodeLayerSizes.size() - 1; i++) {
-        const double* edges = _edges.data() + currentOffset;
-        int edgesSize = _nodeLayerSizes[i] * _nodeLayerSizes[i+1];
-        outputs = calculateLayerValues(inputs, edges, edgesSize);
-        currentOffset += edgesSize;
+      for(int i = _nodes.size() - _nodeLayerSizes[_nodeLayerSizes.size() - 1]; i < _nodes.size(); i++) {
+        outputs.push_back(_nodes[i]);
       }
       return outputs;
     }
 
-    double calculateHighestOutput(std::vector<double>& inputs) {
+    double calculateHighestOutput() {
       
     }
 
 private:
-    static std::vector<double> calculateLayerValues(std::vector<double>& inputs, const double* edges, int edgesSize) {
-      std::vector<double> edgeGroup;
-      int outputSize = edgesSize / inputs.size();
-      for(int i = 0; i < outputSize; i++) {
-        const double* edgeRange = edges + (i * outputSize);
-        edgeGroup.push_back(calculateNodeValue(inputs, edgeRange));
-      }
-      return edgeGroup;
-    }
-
-    static double calculateNodeValue(std::vector<double>& inputs, const double* edges) {
-      double d = 0.0;
+    void initializeNetForCalculation(const std::vector<double>& inputs) {
       for(int i = 0; i < inputs.size(); i++) {
-        d += inputs[i] * edges[i];
+        _nodes[i] = inputs[i];
       }
-      return squash(d);
+      _currentNodeOffset = inputs.size();
+      _currentEdgeOffset = 0;
     }
-
+    
+    void calculateLayers() {
+      for(int i = 0; i < _edgeLayerSizes.size(); i++) {
+        int originSize = _nodeLayerSizes[i];
+        int terminusSize = _nodeLayerSizes[i+1];
+        calculateLayer(originSize, terminusSize);
+        _currentNodeOffset += terminusSize;
+      }
+    }
+    
+    void calculateLayer(const int& originSize, const int& terminusSize) {
+      for(int j = 0; j < terminusSize; j++) {
+        calculateNode(originSize, terminusSize, j);
+      }
+    }
+    
+    void calculateNode(const int& originSize, const int& terminusSize, const int& currentPlaceInLayer) {
+      double d = 0.0;
+      for(int k = 0; k < originSize; k++) {
+        double edgeValue = _edges[_currentEdgeOffset];
+        double nodeValue = _nodes[_currentNodeOffset - originSize + k];
+        d += nodeValue * edgeValue;
+        _currentEdgeOffset++;
+      }
+      _nodes[_currentNodeOffset + currentPlaceInLayer] = squash(d);
+    }
+  
     static double squash(const double& x) {
       return 1 / (1 + exp(-x));
     }
@@ -76,5 +99,26 @@ private:
         edges.push_back(random(gen));
       }
       return edges;      
+    }
+    
+    static std::vector<int> edgeLayerSizes(const std::vector<int>& nodeLayerSizes) {
+      std::vector<int> edgeLayerSizes;
+      for(int i = 0; i < nodeLayerSizes.size() - 1; i++) {
+        edgeLayerSizes.push_back(nodeLayerSizes[i] * nodeLayerSizes[i+1]);
+      }
+      return edgeLayerSizes;
+    }
+    
+    static std::vector<double> nodes(const std::vector<int>& nodeLayerSizes) {
+      int numNodes = 0;
+      for(int i = 0; i < nodeLayerSizes.size(); i++) {
+        numNodes += nodeLayerSizes[i];
+      }
+      
+      std::vector<double> nodes;
+      for(int i = 0; i < numNodes; i++) {
+        nodes.push_back(0.0);
+      }
+      return nodes;      
     }
 };
