@@ -1,28 +1,18 @@
 cmake_minimum_required(VERSION 2.8)
 project(neural-net-visual-test-cpp)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -Wall -Wextra -Wno-unused-parameter")
+set(dir ${CMAKE_CURRENT_SOURCE_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${dir}/bin/${CMAKE_BUILD_TYPE}")
 
-set(BUILD_SHARED_LIBRARIES OFF) 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -m64 -Dmain=SDL_main")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m64" )
 
-### BOX2D 
-include(ExternalProject) 
-set(sdl_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/sdl") 
-set(sdl_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/sdl") 
-set(sdl_DOWNLOAD_DIR "${CMAKE_CURRENT_BINARY_DIR}/sdl/download") 
-set(sdl_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${sdl_INSTALL_DIR}) 
+include_directories("C:/msys64/mingw64/include")
+link_directories("C:/msys64/mingw64/lib")
 
-ExternalProject_Add(SDL 
-    PREFIX ${sdl_PREFIX} 
-    URL http://www.libsdl.org/tmp/SDL-2.0.zip 
-    INSTALL_DIR ${sdl_INSTALL_DIR} 
-    CMAKE_ARGS ${sdl_CMAKE_ARGS} 
-) 
+set(SOURCE_FILES main.cpp app.h neural.h)
+add_executable(neural-net-visual-test-cpp ${SOURCE_FILES})
 
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/sdl/include") 
-
-add_executable(neural-net-visual-test-cpp main.cpp) 
-
-target_link_libraries(neural-net-visual-test-cpp ${sdl_PREFIX}/lib/libSDL2.a pthread dl)
-
-add_dependencies(neural-net-visual-test-cpp SDL)
+target_link_libraries(neural-net-visual-test-cpp "mingw32")
+target_link_libraries(neural-net-visual-test-cpp "SDL2main")
+target_link_libraries(neural-net-visual-test-cpp "SDL2")

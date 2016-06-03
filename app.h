@@ -44,8 +44,9 @@ class App { // The App class handles the application runtime.
       _neural = new NeuralNetwork(0.05, nodeLayerSizes);
       return 0;
     }
-    
+
     int enterLoop() {
+      drawWorld();
       bool running = true;
       
       while(running == true) {
@@ -55,8 +56,10 @@ class App { // The App class handles the application runtime.
             running = false;
           }
         }
-        
-        drawWorld();
+        // Moved call to drawWorld() outside of loop since there's no
+        // reason to have it draw the same thing over and over every
+        // loop iteration. Also, why are tabs == 2 spaces?? This is
+        // madness! Tabs should be four spaces, as god intended. :)
       }
 
       return 0;
@@ -82,21 +85,21 @@ class App { // The App class handles the application runtime.
     }
     
     void drawPoints() {
-      for(int x = 0; x < SCREEN_WIDTH; x++) {
-        for(int y = 0; y < SCREEN_HEIGHT; y++) {
-          drawPoint(x,y);
+      for(int y = 0; y < SCREEN_HEIGHT; y++) {
+        for(int x = 0; x < SCREEN_WIDTH; x++) {
+          drawPoint(x, y);
         }
       }
     }
     
     void drawPoint(int x, int y) {
       std::vector<double> inputs;
-      inputs.push_back(x);
-      inputs.push_back(y);
+      inputs.push_back( double(x) / double(SCREEN_WIDTH));
+      inputs.push_back( double(y) / double(SCREEN_HEIGHT));
       std::vector<double> outputs = _neural->calculateOutputValues(inputs);
-      int r = floor(outputs[0] * 256);
-      int g = floor(outputs[1] * 256);
-      int b = floor(outputs[2] * 256);
+      int r = floor(outputs[0] * 255);
+      int g = floor(outputs[1] * 255);
+      int b = floor(outputs[2] * 255);
       SDL_SetRenderDrawColor(_renderer, r, g, b, 255);
       SDL_RenderDrawPoint(_renderer, x, y);
     }
