@@ -4,8 +4,8 @@
 #include "neural.h"
 #include "timer.h"
 
-#define SCREEN_HEIGHT 200
-#define SCREEN_WIDTH 200
+#define SCREEN_HEIGHT 500
+#define SCREEN_WIDTH 500
 
 class App { // The App class handles the application runtime.
   public:
@@ -44,8 +44,8 @@ class App { // The App class handles the application runtime.
         std::cout << "Could not create renderer: " << SDL_GetError() << '\n';
         return 1;
       }
-      std::vector<int> nodeLayerSizes = { 2, 256, 256, 256, 3 };
-      //std::vector<int> nodeLayerSizes = { 2, 32, 16, 8, 3 };
+      //std::vector<int> nodeLayerSizes = { 2, 256, 256, 256, 3 };
+      std::vector<int> nodeLayerSizes = { 2, 32, 16, 8, 3 };
       _neural = new NeuralNetwork(0.05, nodeLayerSizes);
       return 0;
     }
