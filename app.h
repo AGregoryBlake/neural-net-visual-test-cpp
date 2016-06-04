@@ -2,9 +2,10 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include "neural.h"
+#include "timer.h"
 
-#define SCREEN_HEIGHT 500
-#define SCREEN_WIDTH 500
+#define SCREEN_HEIGHT 200
+#define SCREEN_WIDTH 200
 
 class App { // The App class handles the application runtime.
   public:
@@ -21,9 +22,11 @@ class App { // The App class handles the application runtime.
     SDL_Window* _window;
     SDL_Renderer* _renderer;
     NeuralNetwork* _neural;
+    Core::Timer* _timer;
 
 
     int start() {
+      _timer = new Core::Timer();
       SDL_Init(SDL_INIT_VIDEO);
       _window = SDL_CreateWindow("An SDL2 Window",
                                 SDL_WINDOWPOS_UNDEFINED,
@@ -41,8 +44,8 @@ class App { // The App class handles the application runtime.
         std::cout << "Could not create renderer: " << SDL_GetError() << '\n';
         return 1;
       }
-      //std::vector<int> nodeLayerSizes = { 2, 64, 3 };
-      std::vector<int> nodeLayerSizes = { 2, 32, 16, 8, 3 };
+      std::vector<int> nodeLayerSizes = { 2, 256, 256, 256, 3 };
+      //std::vector<int> nodeLayerSizes = { 2, 32, 16, 8, 3 };
       _neural = new NeuralNetwork(0.05, nodeLayerSizes);
       return 0;
     }
@@ -50,7 +53,7 @@ class App { // The App class handles the application runtime.
     int enterLoop() {
       bool running = true;
       
-      while(running == true) {
+      //while(running == true) {
         SDL_Event event;
         while(SDL_PollEvent(&event)) {
           if(event.key.keysym.sym == SDLK_q) {
@@ -59,8 +62,14 @@ class App { // The App class handles the application runtime.
         }
         
         drawWorld();
-      }
-
+      
+      // NeuralNetwork* tmp = _neural;
+      //  _neural = new NeuralNetwork(tmp);
+      //  delete tmp;
+      //}
+      
+      double elapsed = _timer->Elapsed_Seconds();
+      std::cout << "Time: " << elapsed << std::fixed << "    (" << double(SCREEN_HEIGHT * SCREEN_WIDTH) / elapsed << " per second)\n";
       return 0;
     }
     
@@ -93,8 +102,8 @@ class App { // The App class handles the application runtime.
     
     void drawPoint(int x, int y) {
       std::vector<double> inputs;
-      inputs.push_back((double) x / (double)SCREEN_WIDTH);
-      inputs.push_back((double) y / (double)SCREEN_HEIGHT);
+      inputs.push_back((double) (x - 128) / (double)SCREEN_WIDTH);
+      inputs.push_back((double) (y - 128) / (double)SCREEN_HEIGHT);
       _neural->calculateOutputValues(inputs);
       std::vector<double> outputs = _neural->getOutputValues();
       int r = floor(outputs[0] * 256);

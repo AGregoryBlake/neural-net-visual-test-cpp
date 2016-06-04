@@ -4,42 +4,42 @@
 #include <math.h>
 
 class NeuralNetwork {
-  public:
-    const double _mutationRate;
-    const std::vector<int> _nodeLayerSizes;
-    const std::vector<int> _edgeLayerSizes;
-    std::vector<double> _nodes;
-    const std::vector<double> _edges; // weight values grouped by edge group, terminus, origin.
-    int _currentNodeOffset;
-    int _currentEdgeOffset;
+    public:
+        const double _mutationRate;
+        const std::vector<int> _nodeLayerSizes;
+        const std::vector<int> _edgeLayerSizes;
+        std::vector<double> _nodes;
+        const std::vector<double> _edges; // weight values grouped by edge group, terminus, origin.
+        int _currentNodeOffset;
+        int _currentEdgeOffset;
   
-    NeuralNetwork(double mutationRate, const std::vector<int> nodeLayerSizes) // Initial Constructor.
-      : _mutationRate(mutationRate),
-        _nodeLayerSizes(nodeLayerSizes),
-        _edgeLayerSizes(edgeLayerSizes(nodeLayerSizes)),
-        _nodes(nodes(nodeLayerSizes)),
-        _edges(edges(nodeLayerSizes)) {}
-    /*
-    // TODO: Mutate constructor.
-    NeuralNetwork(NeuralNetwork* neural) 
-      : _mutationRate(neural->_mutationRate),
-        _nodeLayerSizes(neural->_nodeLayerSizes),
-        _verticeGroups(mutate(neural->_nodeLayerSizes)) {}
+        NeuralNetwork(double mutationRate, const std::vector<int> nodeLayerSizes) // Initial Constructor.
+            : _mutationRate(mutationRate),
+            _nodeLayerSizes(nodeLayerSizes),
+            _edgeLayerSizes(edgeLayerSizes(nodeLayerSizes)),
+            _nodes(nodes(nodeLayerSizes)),
+            _edges(edges(nodeLayerSizes)) {}
 
-*/
+        // Mutate constructor.
+        NeuralNetwork(NeuralNetwork* neural) 
+            : _mutationRate(neural->_mutationRate),
+            _nodeLayerSizes(neural->_nodeLayerSizes),
+            _edgeLayerSizes(neural->_edgeLayerSizes),
+            _nodes(neural->_nodes),
+            _edges(mutate(neural->_edges)) {}
     
-    void calculateOutputValues(std::vector<double>& inputs) {
-      initializeNetForCalculation(inputs);
-      calculateLayers();
-    }
+        void calculateOutputValues(std::vector<double>& inputs) {
+          initializeNetForCalculation(inputs);
+          calculateLayers();
+        }
     
-    std::vector<double> getOutputValues() {
-      std::vector<double> outputs;
-      for(int i = _nodes.size() - _nodeLayerSizes[_nodeLayerSizes.size() - 1]; i < _nodes.size(); i++) {
-        outputs.push_back(_nodes[i]);
-      }
-      return outputs;
-    }
+        std::vector<double> getOutputValues() {
+          std::vector<double> outputs;
+          for(int i = _nodes.size() - _nodeLayerSizes[_nodeLayerSizes.size() - 1]; i < _nodes.size(); i++) {
+            outputs.push_back(_nodes[i]);
+          }
+          return outputs;
+        }
 
     double calculateHighestOutput() {
       
@@ -120,5 +120,25 @@ private:
         nodes.push_back(0.0);
       }
       return nodes;      
+    }
+    
+    static std::vector<double> mutate(const std::vector<double>& oldEdges) {
+      std::random_device rd;
+      std::mt19937_64 gen(rd());
+      std::uniform_int_distribution<int> randomInt(0, oldEdges.size() - 1);
+      std::uniform_real_distribution<double> randomDouble(-8.0,8.0);
+      
+      int replaceIndex = randomInt(gen);
+      std::vector<double> newEdges;
+      for(int i = 0; i < oldEdges.size(); i++) {
+        int value;
+        if(i == replaceIndex) {
+            value = randomDouble(gen);
+        } else {
+            value = oldEdges[i];
+        }
+        newEdges.push_back(value);
+      }
+      return newEdges;      
     }
 };
