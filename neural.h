@@ -15,6 +15,7 @@ class NeuralNetwork {
         std::vector<double> _nodes;
         const std::vector<double> _edges; // weight values grouped by edge group, terminus, origin.
   
+        // -------------------------------------------------------------------- constructors
         NeuralNetwork(double mutationRate, const std::vector<int> nodeLayerSizes) // Initial Constructor.
             : _mutationRate(mutationRate),
             _nodeLayerSizes(nodeLayerSizes),
@@ -34,16 +35,15 @@ class NeuralNetwork {
             calculateLayers();
         }
     
-        std::vector<double> getOutputValues() {
-            std::vector<double> outputs;
-            for(int i = _nodes.size() - _nodeLayerSizes[_nodeLayerSizes.size() - 1]; i < _nodes.size(); i++) {
-                outputs.push_back(_nodes[i]);
+        void fillOutputValues(std::vector<double>& outputs) {
+            int lastLayerSize = _nodeLayerSizes[_nodeLayerSizes.size() - 1];
+            for(int i = 0; i < lastLayerSize; i++) {
+                outputs[i] = _nodes[_nodes.size() - lastLayerSize + i];
             }
-            return outputs;
         }
 
         double calculateHighestOutput() {
-      
+            
         }
 
     private:
